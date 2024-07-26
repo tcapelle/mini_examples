@@ -1,3 +1,5 @@
+name: Post Merge auto Clean
+
 on:
   pull_request:
     types: [closed]
