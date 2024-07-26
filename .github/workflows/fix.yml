@@ -20,21 +20,10 @@ jobs:
         - name: Install Dependencies
           run: |
             python -m pip install -r requirements.txt
-        - name: Get list of changed .ipynb files
-          id: get_changed_files
-          run: |
-            git fetch --prune --unshallow
-            git diff --name-only HEAD^ HEAD | grep '\.ipynb$' | jq -R -s -c 'split("\n")[:-1]' > changed_files.json
-            echo "files=$(cat changed_files.json)" >> $GITHUB_OUTPUT
         - name: Test clean up .ipynb files
           shell: bash
           run: |
-            files='${{ steps.get_changed_files.outputs.files }}'
-            echo "$files" | jq -c '.[]' | while read -r file; do
-              file=$(echo "$file" | jq -r '.')
-              echo "Cleaning up ${file}"
-              nb_helpers.fix_nbs "${file}"
-            done
+            nb_helpers.fix_nbs .
             git status -s # display the status to see which nbs need cleaning up
             if [[ `git status --porcelain -uno` ]]; then
               git status -uno
