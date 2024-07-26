@@ -23,11 +23,13 @@ jobs:
         id: get_changed_files
         run: |
           git fetch --prune --unshallow
-          git diff --name-only HEAD^ HEAD | grep '\.ipynb$' > changed_files.txt
-          echo "files=$(cat changed_files.txt | tr '\n' ' ')" >> $GITHUB_OUTPUT
+          git diff --name-only HEAD^ HEAD | grep '\.ipynb$' | jq -R -s -c 'split("\n")[:-1]' > changed_files.json
+          echo "files=$(cat changed_files.json)" >> $GITHUB_OUTPUT
       - name: Clean up .ipynb files
         run: |
-          for file in ${{ steps.get_changed_files.outputs.files }}; do
+          files='${{ steps.get_changed_files.outputs.files }}'
+          echo "$files" | jq -c '.[]' | while read -r file; do
+            file=$(echo "$file" | jq -r '.')
             echo "Cleaning up ${file}"
             nb_helpers.fix_nbs "${file}"
           done
