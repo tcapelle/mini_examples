@@ -1,0 +1,32 @@
+on:
+  pull_request:
+    types: [closed]
+    paths:
+      - '**.ipynb'
+
+jobs:
+  clean_up:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+      - name: Install Dependencies
+        run: |
+          python -m pip install -r requirements.txt
+      - name: Get list of changed .ipynb files
+        id: get_changed_files
+        run: |
+          git fetch --prune --unshallow
+          git diff --name-only HEAD^ HEAD | grep '\.ipynb$' > changed_files.txt
+          echo "::set-output name=files::$(cat changed_files.txt | tr '\n' ' ')"
+      - name: Clean up .ipynb files
+        run: |
+          for file in ${{ steps.get_changed_files.outputs.files }}; do
+            echo "Cleaning up $file"
+          done
