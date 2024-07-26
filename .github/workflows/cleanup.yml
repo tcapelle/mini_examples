@@ -28,8 +28,8 @@ jobs:
       - name: Clean up .ipynb files
         run: |
           for file in ${{ steps.get_changed_files.outputs.files }}; do
-            echo "Cleaning up $file"
-            nb_helpers.fix_nbs $file
+            echo "Cleaning up ${file}"
+            nb_helpers.fix_nbs "${file}"
           done
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v5
